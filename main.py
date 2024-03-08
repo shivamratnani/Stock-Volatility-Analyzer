@@ -5,45 +5,102 @@ import matplotlib.pyplot as plt
 import time
 import pandas as pd
 import numpy as np
-# SVMBZCBADJX40U62
+from datetime import datetime, timedelta
 
+
+# SVMBZCBADJX40U62
 
 
 def ask_user_for_input():
     # ask user for ticker
-    ticker = input("Enter the stock ticker symbol (ex. AAPL): ")
-    ticker_check = yf.Ticker(ticker)
+    ticker_input = input("Enter the stock ticker symbol (ex. AAPL): ")
+    ticker_check = yf.Ticker(ticker_input)
     while ticker_check.info is None:
         print("Invalid ticker symbol. Please try again.")
-        ticker = input("Enter the stock ticker symbol: ")
-        ticker_check = yf.Ticker(ticker)
+        ticker_input = input("Enter the stock ticker symbol: ")
+        ticker_check = yf.Ticker(ticker_input)
 
     # ask user for start date & time
-    start_date = input("Enter the start date (MM-DD-YYYY): ")
-    while len(start_date) != 10:
-        print("Invalid date format. Please try again.")
-        start_date = input("Enter the start date (MM-DD-YYYY): ")
+    print(
+        "Please enter the start date and time for the data you would like to analyze. Enter today, yesterday, week, month, year, or all for the entire dataset. Additionally, you can enter a specific date and time in the format MM-DD-YYYY HH:MM:SS.")
+    start_date_input = input("Enter the start date (MM-DD-YYYY): ")
 
-    start_time = input("Enter the start time or 0 if you would like the most recent data (HH:MM:SS): ")
-    while len(start_time) != 8 and start_time != "0":
+    # remove spaces
+    start_date_input = start_date_input.replace(" ", "")
+
+    # add support for today, yesterday, week, month, year, all
+
+    # start date - mm-dd-yyyy format
+    if start_date_input == "today":
+        start_date_input = datetime.today().strftime('%m-%d-%Y')
+    elif start_date_input == "yesterday":
+        start_date_input = (datetime.today() - timedelta(days=1)).strftime('%m-%d-%Y')
+    elif start_date_input == "week":
+        start_date_input = (datetime.today() - timedelta(days=7)).strftime('%m-%d-%Y')
+    elif start_date_input == "month":
+        start_date_input = (datetime.today() - timedelta(days=30)).strftime('%m-%d-%Y')
+    elif start_date_input == "year":
+        start_date_input = (datetime.today() - timedelta(days=365)).strftime('%m-%d-%Y')
+    elif start_date_input == "all":
+        start_date_input = datetime.today().strftime('%m-%d-%Y')
+
+    # end date
+
+
+
+    while len(
+        start_date_input) != 10:
+        print("Invalid date format. Please try again.")
+        start_date_input = input("Enter the start date (MM-DD-YYYY): ")
+
+    start_time_input = input("Enter the start time or 0 if you would like the most recent data (HH:MM:SS): ")
+    while len(start_time_input) != 8 and start_time_input != "0":
         print("Invalid time format. Please try again.")
-        start_time = input("Enter the start time or 0 if you would like the most recent data (HH:MM:SS): ")
+        start_time_input = input("Enter the start time or 0 if you would like the most recent data (HH:MM:SS): ")
 
     # ask user for end date & time
-    end_date = input("Enter the end date (MM-DD-YYYY): ")
-    while len(end_date) != 10:
+    end_date_input = input("Enter the end date (MM-DD-YYYY): ")
+
+    # remove spaces
+    end_date_input = end_date_input.replace(" ", "")
+
+    # add support for today, yesterday, week, month, year, all
+    if end_date_input == "today":
+        end_date_input = datetime.today().strftime('%m-%d-%Y')
+    elif end_date_input == "yesterday":
+        end_date_input = (datetime.today() - timedelta(days=1)).strftime('%m-%d-%Y')
+    elif end_date_input == "week":
+        end_date_input = (datetime.today() - timedelta(days=7)).strftime('%m-%d-%Y')
+    elif end_date_input == "month":
+        end_date_input = (datetime.today() - timedelta(days=30)).strftime('%m-%d-%Y')
+    elif end_date_input == "year":
+        end_date_input = (datetime.today() - timedelta(days=365)).strftime('%m-%d-%Y')
+    elif end_date_input == "all":
+        end_date_input = "01-01-1970"
+
+
+
+    while len(end_date_input) != 10:
         print("Invalid date format. Please try again.")
-        end_date = input("Enter the end date (MM-DD-YYYY): ")
+        end_date_input = input("Enter the end date (MM-DD-YYYY): ")
 
     end_time = input("Enter the end time or 0 if you would like the most recent data (HH:MM:SS): ")
     while len(end_time) != 8 and end_time != "0":
         print("Invalid time format. Please try again.")
         end_time = input("Enter the end time or 0 if you would like the most recent data (HH:MM:SS): ")
 
-    return ticker, start_date, start_time, end_date, end_time
+    return ticker_input, start_date_input, start_time_input, end_date_input, end_time
 
 
-#Advanced Analytics for AlphaVantage API
+def calculate_days(start_date, end_date):
+    date_format = "%m-%d-%Y"
+    start_datetime = datetime.strptime(start_date, date_format)
+    end_datetime = datetime.strptime(end_date, date_format)
+    amount_of_days = end_datetime - start_datetime
+    return amount_of_days
+
+
+# Advanced Analytics for AlphaVantage API
 # This endpoint returns a rich set of advanced analytics metrics (e.g., total return, variance, auto-correlation, etc.) for a given time series over a fixed temporal window.
 #
 #
@@ -99,28 +156,43 @@ def ask_user_for_input():
 #
 # API Key: SVMBZCBADJX40U62
 
-def fetch_stock_data(ticker, start_date, end_date, start_time, end_time):
+def fetch_stock_data(ticker_fetch, start_data_fetch, end_date_fetch):
     """
     Fetch historical stock prices from Yahoo Finance.
 
-    :param ticker: Stock ticker symbol.
-    :param start_date: Start date for the data in 'YYYY-MM-DD' format.
-    :param end_date: End date for the data in 'YYYY-MM-DD' format.
-    :param start_time: Start time for the data in 'HH:MM:SS' format.
-    :param end_time: End time for the data in 'HH:MM:SS' format.
+    :param ticker_fetch: Stock ticker symbol.
+    :param start_data_fetch: Start date for the data in 'YYYY-MM-DD' format.
+    :param end_date_fetch: End date for the data in 'YYYY-MM-DD' format.
+    :param start_time_fetch: Start time for the data in 'HH:MM:SS' format.
+    :param end_time_fetch: End time for the data in 'HH:MM:SS' format.
     :return: DataFrame with historical stock prices.
     """
 
+    interval = "15min"
+
+    # Calculate the amount of days between the start and end date
+    amount_of_days = calculate_days(start_data_fetch, end_date_fetch)
+    print(amount_of_days)
+
+    if amount_of_days == 0:
+        interval = "1min"
+
+    if amount_of_days.days >= 365:
+        interval = "DAILY"
+
     # AlphaVantage API
-    url = "https://alphavantageapi.co/timeseries/analytics?SYMBOLS=" + ticker + "&RANGE=" + start_date + "&RANGE=" + end_date + "&INTERVAL=" + "DAILY&OHLC=close&CALCULATIONS=MEAN,STDDEV,CORRELATION&apikey=demo"
+    # CALCULATIONS=MIN,MAX,MEAN,MEDIAN,CUMULATIVE_RETURN,VARIANCE,STDDEV,MAX_DRAWDOWN,HISTOGRAM,AUTOCORRELATION,COVARIANCE,CORRELATION&apikey=SVMBZCBADJX40U62
+    url = "https://alphavantageapi.co/timeseries/analytics?SYMBOLS=" + ticker_fetch + "&RANGE=" + start_data_fetch + "&RANGE=" + end_date_fetch + "&OHLC=close&INTERVAL=" + interval + "&CALCULATIONS=CUMULATIVE_RETURN&apikey=SVMBZCBADJX40U62"
     r = requests.get(url)
     data = r.json()
 
-    # yFinance API
-    stock_yFinance = yf.Ticker(ticker)
-    data_yFinance = stock_yFinance.history(start=start_date, end=end_date)
-    return data
+    # print the data
+    print(data)
 
+    # yFinance API
+    # tock_yFinance = yf.Ticker(ticker_fetch)
+    # data_yFinance = stock_yFinance.history(start=start_data_fetch, end=end_date_fetch)
+    return data
 
 
 def print_stock_data(data):
@@ -131,51 +203,23 @@ def print_stock_data(data):
     """
     print(data)
 
+
 def display_stock_data(data):
     st.title("Real-time " + data.info + " Stock Prices")
     ticker = data.ticker
 
-def calculate_volatility(data):
-    """
-    Calculate and return the annualized volatility of stock.
-
-    :param data: DataFrame with stock price data.
-    :return: Annualized volatility as a float.
-    """
-    # Calculate daily returns
-    data['Daily Return'] = data['Close'].pct_change()
-
-    # Calculate daily returns
-    data['Daily Return'] = data['Close'].pct_change()
-
-    # Calculate daily volatility
-    daily_volatility = data['Daily Return'].std()
-
-    # Annualize daily volatility
-    annualized_volatility = daily_volatility * (252 ** 0.5)  # Assuming 252 trading days in a year
-    return annualized_volatility
-
 
 # main function
-def main():
-    # while True:
+if __name__ == "__main__":
+    while True:
+        print("Welcome to the Stock Data Analysis Tool!")
+        print("This tool allows you to fetch and analyze stock data.")
 
+        # ask user for input
+        ticker, start_date, start_time, end_date, end_time = ask_user_for_input()
 
-    ticker = "AAPL"  # Apple Inc.
-    start_date = "2023-01-01"
-    end_date = "2023-12-31"
+        # fetch stock data
+        stock_data = fetch_stock_data(ticker, start_date, end_date)
 
-    stock_data = fetch_stock_data(ticker, start_date, end_date)
-    print_stock_data(stock_data)
-    volatility = calculate_volatility(stock_data)
-    print(f"The annualized volatility of {ticker} from {start_date} to {end_date} is: {volatility:.2%}")
-
-
-# Example usage
-ticker = "AAPL"  # Apple Inc.
-start_date = "2023-01-01"
-end_date = "2023-12-31"
-
-stock_data = fetch_stock_data(ticker, start_date, end_date)
-volatility = calculate_volatility(stock_data)
-print(f"The annualized volatility of {ticker} from {start_date} to {end_date} is: {volatility:.2%}")
+        # print stock data
+        print_stock_data(stock_data)
