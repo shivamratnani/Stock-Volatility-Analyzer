@@ -35,10 +35,10 @@ def get_ticker_and_period(choice):
 
     if choice == "1":
         period, interval = given_period()
-        return 0, 0, period, interval
+        return ticker_input, 0, 0, period, interval
     elif choice == "2":
         start_date, end_date = customized_period()
-        return start_date, end_date, 0, 0
+        return ticker_input, start_date, end_date, 0, 0
 
 
 def given_period():
@@ -273,14 +273,13 @@ if __name__ == "__main__":
         choice = input(
             "Enter 1 to get gainers and losers for given period, 2 to get stock data for customized period, 3 to get stock info, 4 to display a graph, or 0 to exit: ")
 
-        if choice == "1":
-            given_period()
+        # get stock ticker and period
+        ticker, start_date, end_date, period, interval = get_ticker_and_period(choice)
 
-        # ask user for input
-        ticker, start_date, start_time, end_date, end_time = ask_user_for_input()
+        # TODO: get data n shii
 
         # fetch stock data
-        stock_data = fetch_stock_data(ticker, start_date, end_date)
+        stock_data = fetch_stock_data
 
         # print stock data
         print_stock_data(stock_data)
