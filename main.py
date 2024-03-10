@@ -50,7 +50,7 @@ def get_ticker_and_period(choice):
     choice (str): The user's choice. If "1", the given_period function is called. If "2", the customized_period function is called.
 
     Returns:
-    tuple: A tuple containing the start date, end date, period, and interval. The start date and end date are set to 0 if the given_period function is called. The period and interval are set to 0 if the customized_period function is called.
+    tuple: A tuple containing the start date, end date, period, and interval. The start date and end date are set to "0" if the given_period function is called. The period and interval are set to 0 if the customized_period function is called.
     """
 
     # ask user for ticker
@@ -63,7 +63,7 @@ def get_ticker_and_period(choice):
 
     if choice == "1":
         period, interval = given_period()
-        return ticker_input, 0, 0, period, interval
+        return ticker_input, "0", "0", period, interval
     elif choice == "2":
         start_date, end_date = customized_period()
         return ticker_input, start_date, end_date, 0, 0
@@ -82,14 +82,17 @@ def given_period():
     """
 
     # ask user for given period
-    period, interval = input(
-        "Enter 1m, 5m, 15m, 30m, 1h, 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, or max to specify the time period.")
+    interval = input(
+        "Enter 1m, 5m, 15m, 30m, 1h, 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, or max to specify the time period: ")
+    period = interval
 
-    while interval not in ["1m", "5m", "15m", "30m", "1h", "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y",
+    while period not in ["1m", "5m", "15m", "30m", "1h", "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y",
                            "ytd", "max"]:
         print("Invalid time period. Please try again.")
-        period, interval = input(
+        interval = input(
             "Enter 1m, 5m, 15m, 30m, 1h, 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, or max to specify the time period.")
+        period = interval
+
     if period == "1m" or "5m" or "15m" or "30m" or "1h":
         period = "1d"
         return period, interval
@@ -151,8 +154,14 @@ def calculate_days(start_date, end_date):
     """
 
     date_format = "%m-%d-%Y"
-    start_datetime = datetime.strptime(start_date, date_format)
-    end_datetime = datetime.strptime(end_date, date_format)
+    if start_date == "0":
+        start_datetime = datetime.now()
+    else:
+        start_datetime = datetime.strptime(start_date, date_format)
+    if end_date == "0":
+        end_datetime = datetime.now()
+    else:
+        end_datetime = datetime.strptime(end_date, date_format)
     amount_of_days = end_datetime - start_datetime
     return amount_of_days
 
@@ -377,6 +386,9 @@ if __name__ == "__main__":
         # get stock ticker and period
         if choice == "1" or choice == "2":
             ticker, start_date, end_date, period, interval = get_ticker_and_period(choice)
+            data = fetch_stock_data(ticker, start_date, end_date, period, interval)
+            print_stock_data(data)
+
         elif choice == "3":
             ticker = get_stock_ticker()
             stock_info = fetch_stock_info(ticker)
