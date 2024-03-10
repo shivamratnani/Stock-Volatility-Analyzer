@@ -10,8 +10,21 @@ from datetime import datetime, timedelta
 
 # SVMBZCBADJX40U62
 
+def get_ticker_and_period(choice):
+    """
+    Get the stock ticker symbol and time period from the user.
 
-def ask_user_for_input():
+    This function prompts the user to input a stock ticker symbol and validates it using the yfinance library.
+    If the ticker symbol is invalid, the user is asked to try again until a valid symbol is entered.
+    Depending on the user's choice, the function either calls the given_period function or the customized_period function to get the time period.
+
+    Parameters:
+    choice (str): The user's choice. If "1", the given_period function is called. If "2", the customized_period function is called.
+
+    Returns:
+    tuple: A tuple containing the start date, end date, period, and interval. The start date and end date are set to 0 if the given_period function is called. The period and interval are set to 0 if the customized_period function is called.
+    """
+
     # ask user for ticker
     ticker_input = input("Enter the stock ticker symbol (ex. AAPL): ")
     ticker_check = yf.Ticker(ticker_input)
@@ -20,79 +33,94 @@ def ask_user_for_input():
         ticker_input = input("Enter the stock ticker symbol: ")
         ticker_check = yf.Ticker(ticker_input)
 
-    # ask user for start date & time
-    print(
-        "Please enter the start date and time for the data you would like to analyze. Enter today, yesterday, week, month, year, or all for the entire dataset. Additionally, you can enter a specific date and time in the format MM-DD-YYYY HH:MM:SS.")
-    start_date_input = input("Enter the start date (MM-DD-YYYY): ")
-
-    # remove spaces
-    start_date_input = start_date_input.replace(" ", "")
-
-    # add support for today, yesterday, week, month, year, all
-
-    # start date - mm-dd-yyyy format
-    if start_date_input == "today":
-        start_date_input = datetime.today().strftime('%m-%d-%Y')
-    elif start_date_input == "yesterday":
-        start_date_input = (datetime.today() - timedelta(days=1)).strftime('%m-%d-%Y')
-    elif start_date_input == "week":
-        start_date_input = (datetime.today() - timedelta(days=7)).strftime('%m-%d-%Y')
-    elif start_date_input == "month":
-        start_date_input = (datetime.today() - timedelta(days=30)).strftime('%m-%d-%Y')
-    elif start_date_input == "year":
-        start_date_input = (datetime.today() - timedelta(days=365)).strftime('%m-%d-%Y')
-    elif start_date_input == "all":
-        start_date_input = datetime.today().strftime('%m-%d-%Y')
-
-    # end date
+    if choice == "1":
+        period, interval = given_period()
+        return 0, 0, period, interval
+    elif choice == "2":
+        start_date, end_date = customized_period()
+        return start_date, end_date, 0, 0
 
 
+def given_period():
+    """
+    Ask the user to input a given time period.
 
-    while len(
-        start_date_input) != 10:
-        print("Invalid date format. Please try again.")
-        start_date_input = input("Enter the start date (MM-DD-YYYY): ")
+    This function prompts the user to input a time period from a list of valid options.
+    If the user enters an invalid time period, they are asked to try again until a valid period is entered.
+    The function also sets the interval based on the entered period.
 
-    start_time_input = input("Enter the start time or 0 if you would like the most recent data (HH:MM:SS): ")
-    while len(start_time_input) != 8 and start_time_input != "0":
-        print("Invalid time format. Please try again.")
-        start_time_input = input("Enter the start time or 0 if you would like the most recent data (HH:MM:SS): ")
+    Returns:
+    tuple: A tuple containing the period and interval.
+    """
 
-    # ask user for end date & time
-    end_date_input = input("Enter the end date (MM-DD-YYYY): ")
+    # ask user for given period
+    period, interval = input(
+        "Enter 1m, 5m, 15m, 30m, 1h, 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, or max to specify the time period.")
 
-    # remove spaces
-    end_date_input = end_date_input.replace(" ", "")
+    while interval not in ["1m", "5m", "15m", "30m", "1h", "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y",
+                           "ytd", "max"]:
+        print("Invalid time period. Please try again.")
+        period, interval = input(
+            "Enter 1m, 5m, 15m, 30m, 1h, 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, or max to specify the time period.")
+    if period == "1d":
+        interval = "1m"
+    elif period == "5d":
+        interval = "5m"
+    elif period == "1mo":
+        interval = "15m"
+    elif period == "3mo" or "6mo" or "1y" or "2y" or "5y" or "10y" or "ytd" or "max":
+        interval = "1d"
+    elif period == "1m" or "5m" or "15m" or "30m" or "1h":
+        period = "1d"
+        return period, interval
 
-    # add support for today, yesterday, week, month, year, all
-    if end_date_input == "today":
-        end_date_input = datetime.today().strftime('%m-%d-%Y')
-    elif end_date_input == "yesterday":
-        end_date_input = (datetime.today() - timedelta(days=1)).strftime('%m-%d-%Y')
-    elif end_date_input == "week":
-        end_date_input = (datetime.today() - timedelta(days=7)).strftime('%m-%d-%Y')
-    elif end_date_input == "month":
-        end_date_input = (datetime.today() - timedelta(days=30)).strftime('%m-%d-%Y')
-    elif end_date_input == "year":
-        end_date_input = (datetime.today() - timedelta(days=365)).strftime('%m-%d-%Y')
-    elif end_date_input == "all":
-        end_date_input = "01-01-1970"
+    return period, interval
 
+def customized_period():
+    """
+    Ask the user to input a start and end date.
 
+    This function prompts the user to input a start and end date in 'YYYY-MM-DD' format.
+    The user is also informed that they can enter 0 if they have no preference for the start and end time.
+    The function returns the start and end date as a tuple.
 
-    while len(end_date_input) != 10:
-        print("Invalid date format. Please try again.")
-        end_date_input = input("Enter the end date (MM-DD-YYYY): ")
+    Returns:
+    tuple: A tuple containing the start and end date in 'YYYY-MM-DD' format.
 
-    end_time = input("Enter the end time or 0 if you would like the most recent data (HH:MM:SS): ")
-    while len(end_time) != 8 and end_time != "0":
-        print("Invalid time format. Please try again.")
-        end_time = input("Enter the end time or 0 if you would like the most recent data (HH:MM:SS): ")
+    Example:
+    >>> customized_period()
+    Enter the start date in 'YYYY-MM-DD' format: 2020-01-01
+    Enter the end date in 'YYYY-MM-DD' format: 2021-01-01
+    Enter 0 if no preference for start and end time.
+    ('2020-01-01', '2021-01-01')
+    """
 
-    return ticker_input, start_date_input, start_time_input, end_date_input, end_time
+    start_date_input = input("Enter the start date in 'YYYY-MM-DD' format: ")
+    end_date_input = input("Enter the end date in 'YYYY-MM-DD' format: ")
+    print("Enter 0 if no preference for start and end time.")
+
+    return start_date_input, end_date_input
 
 
 def calculate_days(start_date, end_date):
+    """
+    Calculate the number of days between two dates.
+
+    This function takes two dates as input in the format 'MM-DD-YYYY' and returns the number of days between them.
+    The returned value is a datetime.timedelta object which represents the difference between two dates.
+
+    Parameters:
+    start_date (str): The start date in 'MM-DD-YYYY' format.
+    end_date (str): The end date in 'MM-DD-YYYY' format.
+
+    Returns:
+    datetime.timedelta: The number of days between the start and end date.
+
+    Example:
+    >>> calculate_days('01-01-2020', '01-01-2021')
+    datetime.timedelta(days=366)
+    """
+
     date_format = "%m-%d-%Y"
     start_datetime = datetime.strptime(start_date, date_format)
     end_datetime = datetime.strptime(end_date, date_format)
@@ -100,98 +128,120 @@ def calculate_days(start_date, end_date):
     return amount_of_days
 
 
-# Advanced Analytics for AlphaVantage API
-# This endpoint returns a rich set of advanced analytics metrics (e.g., total return, variance, auto-correlation, etc.) for a given time series over a fixed temporal window.
-#
-#
-# API Parameters
-# ❚ Required: SYMBOLS
-#
-# A list of symbols for the calculation. It can be a comma separated list of symbols as a string. Free API keys can specify up to 5 symbols per API request. Premium API keys can specify up to 50 symbols per API request.
-#
-# ❚ Required: RANGE
-#
-# This is the date range for the series being requested. By default, the date range is the full set of data for the equity history. This can be further modified by the LIMIT variable.
-#
-# RANGE can take certain text values as inputs. They are:
-#
-# full
-# {N}day
-# {N}week
-# {N}month
-# {N}year
-# For intraday time series, the following RANGE values are also accepted:
-#
-# {N}minute
-# {N}hour
-# Aside from the “full” value which represents the entire time series, the other values specify an interval to return the series for as measured backwards from the current date/time.
-#
-# To specify start & end dates for your analytics calcuation, simply add two RANGE parameters in your API request. For example: RANGE=2023-07-01&RANGE=2023-08-31 or RANGE=2020-12-01T00:04:00&RANGE=2020-12-06T23:59:59 with minute-level precision for intraday analytics. If the end date is missing, the end date is assumed to be the last trading date. In addition, you can request a full month of data by using YYYY-MM format like 2020-12. One day of intraday data can be requested by using YYYY-MM-DD format like 2020-12-06
-#
-# ❚ Optional: OHLC
-#
-# This allows you to choose which open, high, low, or close field the calculation will be performed on. By default, OHLC=close. Valid values for these fields are open, high, low, close.
-#
-# ❚ Required: INTERVAL
-#
-# Time interval between two consecutive data points in the time series. The following values are supported: 1min, 5min, 15min, 30min, 60min, DAILY, WEEKLY, MONTHLY.
-#
-# ❚ Required: CALCULATIONS
-#
-# A comma separated list of the analytics metrics you would like to calculate:
-#
-# MIN: The minimum return (largest negative or smallest positive) for all values in the series
-# MAX: The maximum return for all values in the series
-# MEAN: The mean of all returns in the series
-# MEDIAN: The median of all returns in the series
-# CUMULATIVE_RETURN: The total return from the beginning to the end of the series range
-# VARIANCE: The population variance of returns in the series range. Optionally, you can use VARIANCE(annualized=True)to normalized the output to an annual value. By default, the variance is not annualized.
-# STDDEV: The population standard deviation of returns in the series range for each symbol. Optionally, you can use STDDEV(annualized=True)to normalized the output to an annual value. By default, the standard deviation is not annualized.
-# MAX_DRAWDOWN: Largest peak to trough interval for each symbol in the series range
-# HISTOGRAM: For each symbol, place the observed total returns in bins. By default, bins=10. Use HISTOGRAM(bins=20) to specify a custom bin value (e.g., 20).
-# AUTOCORRELATION: For each symbol place, calculate the autocorrelation for the given lag (e.g., the lag in neighboring points for the autocorrelation calculation). By default, lag=1. Use AUTOCORRELATION(lag=2) to specify a custom lag value (e.g., 2).
-# COVARIANCE: Returns a covariance matrix for the input symbols. Optionally, you can use COVARIANCE(annualized=True)to normalized the output to an annual value. By default, the covariance is not annualized.
-# CORRELATION: Returns a correlation matrix for the input symbols, using the PEARSON method as default. You can also specify the KENDALL or SPEARMAN method through CORRELATION(method=KENDALL) or CORRELATION(method=SPEARMAN), respectively.
-# ❚ Required: apikey
-#
-# API Key: SVMBZCBADJX40U62
+def convert_time_to_period(days):
+    """
+    Convert a given number of days to a corresponding time period.
 
-def fetch_stock_data(ticker_fetch, start_data_fetch, end_date_fetch):
+    This function takes a number of days as input and returns a string representing the corresponding time period.
+    The time period is determined based on the following ranges:
+    - 1 day or less: "1d"
+    - 2 to 5 days: "5d"
+    - 6 to 30 days: "1mo"
+    - 31 to 90 days: "3mo"
+    - 91 to 180 days: "6mo"
+    - 181 to 365 days: "1y"
+    - 366 to 730 days: "2y"
+    - 731 to 1825 days: "5y"
+    - 1826 to 3650 days: "10y"
+    - 3651 days or more: "max"
+    Note: For a period of 365.25 days, the function returns "ytd" considering it as a leap year.
+
+    Parameters:
+    days (int): The number of days.
+
+    Returns:
+    str: A string representing the corresponding time period.
+
+    Example:
+    >>> convert_time_to_period(400)
+    '2y'
+    """
+
+    if days <= 1:
+        return "1d"
+    elif days <= 5:
+        return "5d"
+    elif days <= 30:
+        return "1mo"
+    elif days <= 90:
+        return "3mo"
+    elif days <= 180:
+        return "6mo"
+    elif days <= 365:
+        return "1y"
+    elif days <= 730:
+        return "2y"
+    elif days <= 1825:
+        return "5y"
+    elif days <= 3650:
+        return "10y"
+    elif days <= 365.25:  # considering leap year
+        return "ytd"
+    else:
+        return "max"
+
+
+def fetch_stock_info(ticker_fetch):
+    """
+    Fetch stock information from Yahoo Finance.
+
+    This function uses the yfinance library to fetch stock information for a given ticker symbol.
+    The information is returned as a dictionary.
+
+    Parameters:
+    ticker_fetch (str): The ticker symbol for the stock.
+
+    Returns:
+    dict: A dictionary containing the stock information.
+
+    Example:
+    >>> fetch_stock_info("AAPL")
+    {'shortName': 'Apple Inc.', 'longName': 'Apple Inc.', 'sector': 'Technology', ...}
+
+    Note:
+    The returned dictionary contains many keys. The exact keys returned may vary depending on the stock.
+    """
+
+    # Create a Ticker object for the given ticker symbol
+    stock_yFinance = yf.Ticker(ticker_fetch)
+
+    # Fetch the stock information
+    info = stock_yFinance.info
+
+    # Return the stock information
+    return info
+
+
+def fetch_stock_data(ticker_fetch, start_data_fetch, end_date_fetch, period, interval):
     """
     Fetch historical stock prices from Yahoo Finance.
 
     :param ticker_fetch: Stock ticker symbol.
     :param start_data_fetch: Start date for the data in 'YYYY-MM-DD' format.
     :param end_date_fetch: End date for the data in 'YYYY-MM-DD' format.
-    :param start_time_fetch: Start time for the data in 'HH:MM:SS' format.
-    :param end_time_fetch: End time for the data in 'HH:MM:SS' format.
+    :param interval: Time interval for the data.
     :return: DataFrame with historical stock prices.
     """
 
-    interval = "15min"
-
     # Calculate the amount of days between the start and end date
     amount_of_days = calculate_days(start_data_fetch, end_date_fetch)
+    if interval == 0:
+        period = convert_time_to_period(amount_of_days.days)
+        if 0 <= amount_of_days.days < 7:
+            interval = "1m"
+        elif 7 <= amount_of_days.days < 30:
+            interval = "5m"
+        elif amount_of_days.days < 60:
+            interval = "15m"
     print(amount_of_days)
-
-    if amount_of_days == 0:
-        interval = "1min"
-
-    if amount_of_days.days >= 365:
-        interval = "DAILY"
-
-    # AlphaVantage API
-    # CALCULATIONS=MIN,MAX,MEAN,MEDIAN,CUMULATIVE_RETURN,VARIANCE,STDDEV,MAX_DRAWDOWN,HISTOGRAM,AUTOCORRELATION,COVARIANCE,CORRELATION&apikey=SVMBZCBADJX40U62
-    url = "https://alphavantageapi.co/timeseries/analytics?SYMBOLS=" + ticker_fetch + "&RANGE=" + start_data_fetch + "&RANGE=" + end_date_fetch + "&OHLC=close&INTERVAL=" + interval + "&CALCULATIONS=CUMULATIVE_RETURN&apikey=SVMBZCBADJX40U62"
-    r = requests.get(url)
-    data = r.json()
-
-    # print the data
-    print(data)
+    print(period)
+    print(interval)
 
     # yFinance API
-    # tock_yFinance = yf.Ticker(ticker_fetch)
-    # data_yFinance = stock_yFinance.history(start=start_data_fetch, end=end_date_fetch)
+    stock_yFinance = yf.Ticker(ticker_fetch)
+    data_yFinance = yf.download(ticker_fetch, period=period, interval=interval)
+    data = data_yFinance
+
     return data
 
 
@@ -211,9 +261,20 @@ def display_stock_data(data):
 
 # main function
 if __name__ == "__main__":
-    while True:
+
+    # user choice
+    choice = 9
+
+    while choice != 0:
         print("Welcome to the Stock Data Analysis Tool!")
         print("This tool allows you to fetch and analyze stock data.")
+
+        # Ask user what they want to do
+        choice = input(
+            "Enter 1 to get gainers and losers for given period, 2 to get stock data for customized period, 3 to get stock info, 4 to display a graph, or 0 to exit: ")
+
+        if choice == "1":
+            given_period()
 
         # ask user for input
         ticker, start_date, start_time, end_date, end_time = ask_user_for_input()
