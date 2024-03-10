@@ -10,6 +10,34 @@ from datetime import datetime, timedelta
 
 # SVMBZCBADJX40U62
 
+def get_stock_ticker():
+    """
+    Prompt the user to input a stock ticker symbol and validate it.
+
+    This function prompts the user to input a stock ticker symbol and validates it using the yfinance library.
+    If the ticker symbol is invalid, the user is asked to try again until a valid symbol is entered.
+    The function returns the validated ticker symbol.
+
+    Returns:
+    str: The validated stock ticker symbol.
+
+    Example:
+    >>> get_stock_ticker()
+    Enter the stock ticker symbol (ex. AAPL): AAPL
+    'AAPL'
+    """
+    ticker = input("Enter the stock ticker symbol (ex. AAPL): ")
+
+    # Check if the ticker symbol is valid
+    if yf.Ticker(ticker).info is None:
+        print("Invalid ticker symbol. Please try again.")
+        # If the ticker symbol is invalid, ask the user to input again
+        get_stock_ticker()
+
+    # Return the validated ticker symbol
+    return ticker
+
+
 def get_ticker_and_period(choice):
     """
     Get the stock ticker symbol and time period from the user.
@@ -62,7 +90,10 @@ def given_period():
         print("Invalid time period. Please try again.")
         period, interval = input(
             "Enter 1m, 5m, 15m, 30m, 1h, 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, or max to specify the time period.")
-    if period == "1d":
+    if period == "1m" or "5m" or "15m" or "30m" or "1h":
+        period = "1d"
+        return period, interval
+    elif period == "1d":
         interval = "1m"
     elif period == "5d":
         interval = "5m"
@@ -70,11 +101,9 @@ def given_period():
         interval = "15m"
     elif period == "3mo" or "6mo" or "1y" or "2y" or "5y" or "10y" or "ytd" or "max":
         interval = "1d"
-    elif period == "1m" or "5m" or "15m" or "30m" or "1h":
-        period = "1d"
-        return period, interval
 
     return period, interval
+
 
 def customized_period():
     """
@@ -181,7 +210,7 @@ def convert_time_to_period(days):
         return "max"
 
 
-def fetch_stock_info(ticker_fetch):
+def fetch_stock_info(ticker):
     """
     Fetch stock information from Yahoo Finance.
 
@@ -189,7 +218,7 @@ def fetch_stock_info(ticker_fetch):
     The information is returned as a dictionary.
 
     Parameters:
-    ticker_fetch (str): The ticker symbol for the stock.
+    ticker (str): The ticker symbol for the stock.
 
     Returns:
     dict: A dictionary containing the stock information.
@@ -203,13 +232,85 @@ def fetch_stock_info(ticker_fetch):
     """
 
     # Create a Ticker object for the given ticker symbol
-    stock_yFinance = yf.Ticker(ticker_fetch)
+    stock_yFinance = yf.Ticker(ticker)
 
     # Fetch the stock information
     info = stock_yFinance.info
 
+    # Prompt the user to select the information they want to see
+    print("Enter 1 for forwardPE, 2 for dividendRate, 3 for marketCap, 4 for volume, 5 for averageVolume (24hrs), 6 for averageVolume10days, 7 for dayHigh, 8 for dayLow, 9 for fiftyTwoWeekHigh, 10 for fiftyTwoWeekLow, -1 to exit.")
+    needed_info = input("Enter the information you want: ")
+
+    # Depending on the user's choice, print the corresponding information
+    if needed_info == "1":
+        print(info["forwardPE"])
+    elif needed_info == "2":
+        print(info["dividendRate"])
+    elif needed_info == "3":
+        print(info["marketCap"])
+    elif needed_info == "4":
+        print(info["volume"])
+    elif needed_info == "5":
+        print(info["averageVolume"])
+    elif needed_info == "6":
+        print(info["averageVolume10days"])
+    elif needed_info == "7":
+        print(info["dayHigh"])
+    elif needed_info == "8":
+        print(info["dayLow"])
+    elif needed_info == "9":
+        print(info["fiftyTwoWeekHigh"])
+    elif needed_info == "10":
+        print(info["fiftyTwoWeekLow"])
+    elif needed_info == "-1":
+        return info
+
     # Return the stock information
     return info
+
+
+def fetch_stock_options(ticker):
+    """
+    Fetch and display stock options for a given ticker symbol.
+
+    This function fetches the stock options for a given ticker symbol using the yfinance library.
+    The user is prompted to input an expiration date for the options and whether they want to see puts or calls.
+    The function then prints the corresponding options to the console.
+
+    Parameters:
+    ticker (yfinance.Ticker object): The ticker symbol for the stock.
+
+    Example:
+    >>> fetch_stock_options(yf.Ticker("AAPL"))
+    Enter the expiration date for the options (ex: 2020-07-24): 2020-07-24
+    Enter 1 for puts and 2 for calls: 1
+    [prints puts options]
+    """
+    # Get the options for the given ticker symbol
+    ticker_options = ticker.options
+    print(ticker_options)
+
+    # Prompt the user to input an expiration date for the options
+    option_date = input("Enter the expiration date for the options (ex: 2020-07-24): ")
+    while option_date not in ticker_options:
+        print("Invalid expiration date. Please try again.")
+        option_date = input("Enter the expiration date for the options: ")
+
+    # Prompt the user to choose between puts and calls
+    option_choice = input("Enter 1 for puts and 2 for calls: ")
+    while option_choice not in ["1", "2"]:
+        print("Invalid choice. Please try again.")
+        option_choice = input("Enter 1 for puts and 2 for calls: ")
+
+    # Print the corresponding options
+    if option_choice == "1":
+        puts = ticker.option_chain(option_date).puts
+        print(puts)
+    elif option_choice == "2":
+        calls = ticker.option_chain(option_date).calls
+        print(calls)
+
+    return ticker_options
 
 
 def fetch_stock_data(ticker_fetch, start_data_fetch, end_date_fetch, period, interval):
@@ -271,12 +372,19 @@ if __name__ == "__main__":
 
         # Ask user what they want to do
         choice = input(
-            "Enter 1 to get gainers and losers for given period, 2 to get stock data for customized period, 3 to get stock info, 4 to display a graph, or 0 to exit: ")
+            "Enter 1 to get gainers and losers for given period, 2 to get stock data for customized period, 3 to get stock info, 4 to show options, 5 to display graph, or 0 to exit: ")
 
         # get stock ticker and period
-        ticker, start_date, end_date, period, interval = get_ticker_and_period(choice)
-
-        # TODO: get data n shii
+        if choice == "1" or choice == "2":
+            ticker, start_date, end_date, period, interval = get_ticker_and_period(choice)
+        elif choice == "3":
+            ticker = get_stock_ticker()
+            stock_info = fetch_stock_info(ticker)
+            print(stock_info)
+        elif choice == "4":
+            ticker = get_stock_ticker()
+            stock_yFinance = yf.Ticker(ticker)
+            ticker_options = fetch_stock_options(stock_yFinance)
 
         # fetch stock data
         stock_data = fetch_stock_data
