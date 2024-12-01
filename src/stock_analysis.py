@@ -305,7 +305,20 @@ class StockAnalysis:
         else:
             return "1wk"
 
-    def display_stock_graph(self, ticker: str, period: str):
+    def display_stock_graph(self, ticker: str, period: str) -> pd.DataFrame:
         """Prepare data for visualization"""
-        data = self.get_stock_info(ticker, period)
-        return data[['Open', 'High', 'Low', 'Close', 'Volume']] 
+        try:
+            # Get stock data
+            stock = yf.Ticker(ticker)
+            data = stock.history(period=period)
+            
+            # Calculate SMAs if enough data points are available
+            if len(data) >= 20:
+                data['SMA_20'] = data['Close'].rolling(window=20).mean()
+            if len(data) >= 50:
+                data['SMA_50'] = data['Close'].rolling(window=50).mean()
+            
+            return data
+            
+        except Exception as e:
+            raise ValueError(f"Error fetching data for {ticker}: {str(e)}") 
