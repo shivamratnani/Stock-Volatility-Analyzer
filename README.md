@@ -46,7 +46,7 @@ A Python-based tool for analyzing stock market data and visualizing market trend
 1. Clone the repository:
 ```bash
 git clone https://github.com/shivamratnani/Stock-Volatility-Analyzer.git
-cd stock-analysis-tool
+cd Stock Volatility Analyzer
 ```
 
 2. Install required packages:
