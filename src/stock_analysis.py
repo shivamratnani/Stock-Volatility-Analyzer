@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from utils.validators import validate_ticker, validate_dates
 from utils.constants import TIME_PERIODS, INTRADAY_PERIODS, REGULAR_PERIODS
 from src.menu import Menu
+from utils.logging import log_failed_analysis
 
 class StockAnalysis:
     def __init__(self):
@@ -84,72 +85,59 @@ class StockAnalysis:
             return self._get_default_sp500_symbols()
 
     def _process_batch(self, symbols: List[str], period: str) -> List[Dict]:
-        """process a batch of stock symbols"""
+        """Process a batch of symbols with early exit on consecutive failures"""
         results = []
+        failed_symbols = []
+        consecutive_failures = 0
         
-        for batch in [symbols[i:i + 10] for i in range(0, len(symbols), 10)]:
+        for symbol in symbols:
             try:
-                time.sleep(1)  # avoid rate limiting
+                clean_symbol = symbol.strip('$').strip()
+                stock = yf.Ticker(clean_symbol)
+                hist = stock.history(period=period)
                 
-                for symbol in batch:
-                    try:
-                        clean_symbol = symbol.strip('$').strip()
-                        stock = yf.Ticker(clean_symbol, session=self.session)
-                        
-                        try:
-                            hist = stock.history(
-                                period=period,
-                                interval=self._get_interval(period),
-                                timeout=10
-                            )
-                        except ValueError as e:
-                            if "invalid period" in str(e).lower():
-                                log_failed_analysis(clean_symbol, period, str(e))
-                                continue
-                            raise e
-                        
-                        if hist.empty:
-                            error_msg = f"possibly delisted; no price data found (period={period})"
-                            log_failed_analysis(clean_symbol, period, error_msg)
-                            continue
-                            
-                        if len(hist) > 1:
-                            start_price = float(hist['Close'].iloc[0])
-                            end_price = float(hist['Close'].iloc[-1])
-                            
-                            if start_price > 0 and end_price > 0:
-                                percent_change = ((end_price - start_price) / start_price) * 100
-                                volume = int(hist['Volume'].mean()) if 'Volume' in hist.columns else 0
-                                
-                                results.append({
-                                    'Symbol': clean_symbol,
-                                    'Change%': round(percent_change, 2),
-                                    'Start Price': round(start_price, 2),
-                                    'End Price': round(end_price, 2),
-                                    'Volume': volume
-                                })
-                                
-                    except Exception as e:
-                        error_msg = str(e)
-                        if "not found" in error_msg.lower() or "delisted" in error_msg.lower():
-                            error_msg = f"possibly delisted; no price data found (period={period})"
-                        log_failed_analysis(clean_symbol, period, error_msg)
-                        continue
-                        
+                if not hist.empty and len(hist) > 0:
+                    start_price = hist['Close'].iloc[0]
+                    end_price = hist['Close'].iloc[-1]
+                    percent_change = ((end_price - start_price) / start_price) * 100
+                    volume = int(hist['Volume'].mean()) if 'Volume' in hist.columns else 0
+                    
+                    results.append({
+                        'Symbol': clean_symbol,
+                        'Change%': round(percent_change, 2),
+                        'Start Price': round(start_price, 2),
+                        'End Price': round(end_price, 2),
+                        'Volume': volume
+                    })
+                    consecutive_failures = 0  # Reset counter on success
+                
+                time.sleep(0.1)
+                
             except Exception:
+                failed_symbols.append(clean_symbol)
+                consecutive_failures += 1
+                if consecutive_failures >= 3:
+                    print("\nMultiple failures detected. Proceeding with available data...")
+                    break
                 continue
+        
+        if failed_symbols:
+            with open('failed_analysis.txt', 'a') as f:
+                f.write(f"\nBatch failed symbols for period {period}:\n")
+                f.write(", ".join(failed_symbols) + "\n")
         
         return results
 
-    def get_gainers_losers(self, period: str, limit: int = 20) -> Tuple[pd.DataFrame, pd.DataFrame, int]:
+    def get_gainers_losers(self, period: str, limit: int = 20, analyze_sp500: bool = None) -> Tuple[pd.DataFrame, pd.DataFrame, int]:
         """get top gainers and losers for period"""
         try:
             # validate period
             if period not in TIME_PERIODS:
                 raise ValueError(f"Invalid period. Must be one of {list(TIME_PERIODS.keys())}")
             
-            # Get user preference for analysis scope
-            analyze_sp500 = Menu.get_analysis_scope()
+            # Get user preference for analysis scope if not provided
+            if analyze_sp500 is None:
+                analyze_sp500 = Menu.get_analysis_scope()
             
             # Get symbols based on user preference
             symbols = self._get_all_stock_symbols(analyze_sp500)
@@ -161,7 +149,7 @@ class StockAnalysis:
             results = []
             
             print("\nFetching data...")
-            smaller_batches = [symbols[i:i + 10] for i in range(0, len(symbols), 10)]
+            smaller_batches = [symbols[i:i + 50] for i in range(0, len(symbols), 50)]
             
             for batch in smaller_batches:
                 results.extend(self._process_batch(batch, period))

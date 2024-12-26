@@ -1,239 +1,115 @@
-# Stock Volatility Analyzer
+# Stock Analysis Tool
 
-A Python-based tool for analyzing stock market data, tracking volatility, and visualizing market trends in real-time. This application provides comprehensive stock analysis tools including historical data analysis, price tracking, and graphical visualizations.
-
-## Table of Contents
-
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Code Examples](#code-examples)
-- [Output Examples](#output-examples)
-- [Troubleshooting](#troubleshooting)
-- [Development](#development)
-- [Contributing](#contributing)
-- [License](#license)
+A Python-based tool for analyzing stock market data and visualizing market trends. This application provides real-time and historical stock data analysis with an interactive command-line interface.
 
 ## Features
 
-### Core Functionality
-- Real-time stock data analysis
-- Historical price tracking
-- Top gainers and losers identification
-- Custom date range analysis
-- Stock price visualization with charts
+* **Market Gainers and Losers Analysis**
+  - Analyze top gainers and losers for any specified time period
+  - Support for both S&P 500 stocks and broader market analysis
+  - Flexible time periods from 1-minute intervals to 10-year historical data
+  - Configurable limit for number of stocks to display
 
-### Time Period Options
+* **Custom Period Analysis**
+  - Analyze stock performance between any two dates
+  - Automatic adjustment to last trading day if end date falls on non-trading day
+  - Dynamic interval selection based on date range
 
-#### Intraday Analysis:
-- 1 minute intervals
-- 5 minute intervals
-- 15 minute intervals
-- 30 minute intervals
-- 1 hour intervals
-- 12 hour intervals
+* **Stock Information**
+  - Access basic company information including sector and industry
+  - View key metrics like market cap, current price, and trading volumes
+  - Display 52-week price ranges
+  - Show average trading volumes
 
-#### Regular Periods:
-- Daily (1d, 5d)
-- Monthly (1mo, 3mo, 6mo)
-- Yearly (1y, 2y, 5y, 10y)
-- Year to date (ytd)
-- Maximum available data
+* **Technical Analysis**
+  - Generate price charts with customizable time periods
+  - Display moving averages (20-day and 50-day SMA when applicable)
+  - Volume analysis and visualization
+  - Interactive charts with matplotlib
 
-### Data Visualization
-- Price charts with moving averages
-- Volume analysis
-- Comparative analysis tools
-- Gainers/Losers visualization
+* **Market-Aware Features**
+  - Automatic detection of market trading hours
+  - Intraday data options only available during market hours
+  - Fallback to last trading day for non-trading periods
 
-## Prerequisites
+## Requirements
 
-- Python 3.8 or higher
-- pip (Python package installer)
-- Virtual environment (recommended)
-- Internet connection for real-time data
+- Python 3.7+
+- yfinance
+- pandas
+- matplotlib
+- pandas_market_calendars
+- pytz
 
 ## Installation
 
-### Clone the Repository:
+1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Stock-Volatility-Analyzer.git
-cd Stock-Volatility-Analyzer
+git clone [repository-url]
+cd stock-analysis-tool
 ```
 
-### Set Up Virtual Environment:
-
-For Windows:
-```bash
-python -m venv venv
-venv\Scripts\activate
-```
-
-For macOS/Linux:
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### Install Dependencies:
+2. Install required packages:
 ```bash
 pip install -r requirements.txt
 ```
 
-### Dependencies
-- yfinance
-- pandas>=2.0.0
-- matplotlib>=3.7.0
-- numpy>=1.24.0
-
 ## Usage
 
-### Starting the Program
+Run the main program:
 ```bash
 python main.py
 ```
 
 ### Main Menu Options
 
-1. **Get Gainers and Losers (Option 1)**
-   - View top performing and underperforming stocks
-   - Choose from various time periods
-   - See percentage changes and volume data
+1. Get gainers and losers for given time period
+2. Get stock data based on your own set time period
+3. Get general stock info
+4. Show options (Coming Soon)
+5. Display graph of set time period
+0. Exit
 
-2. **Custom Period Analysis (Option 2)**
-   - Enter custom date ranges
-   - Get detailed historical data
-   - Format: YYYY-MM-DD
+### Time Periods Available
 
-3. **General Stock Info (Option 3)**
-   - Basic stock information
-   - Current market data
-   - Historical performance
+#### Intraday Periods (During Market Hours)
+- 1m: Last 1 minute of data
+- 5m: Last 5 minutes of data
+- 15m: Last 15 minutes of data
+- 30m: Last 30 minutes of data
+- 1h: Last 1 hour of data
+- 12h: Last 12 hours of data
 
-4. **Options Trading Features (Option 4)**
-   - Coming Soon
+#### Regular Periods
+- 1d: Last 1 day of data
+- 5d: Last 5 days of data
+- 1mo: Last 1 month of data
+- 3mo: Last 3 months of data
+- 6mo: Last 6 months of data
+- 1y: Last 1 year of data
+- 2y: Last 2 years of data
+- 5y: Last 5 years of data
+- 10y: Last 10 years of data
+- ytd: Year to date data
+- max: Maximum available data
 
-5. **Graph Display (Option 5)**
-   - Interactive price charts
-   - Volume visualization
-   - Technical indicators
+## Error Handling
 
-## Code Examples
+- Failed analysis attempts are logged to 'failed_analysis.txt'
+- Automatic retry mechanism for API calls
+- Graceful handling of market closures and invalid dates
+- Comprehensive input validation for tickers and dates
 
-### Fetching Stock Data
-```python
-from src.stock_analysis import StockAnalysis
+## Data Sources
 
-analyzer = StockAnalysis()
-data = analyzer.get_stock_info("AAPL", "1d")
-```
+- Stock data is fetched using the Yahoo Finance API via yfinance
+- S&P 500 constituent list is retrieved from Wikipedia
+- Market calendar data from NYSE calendar
 
-### Creating Visualizations
-```python
-from src.visualization import StockVisualizer
+## Notes
 
-visualizer = StockVisualizer()
-visualizer.plot_stock_data(data, "AAPL", "1d")
-```
-
-## Output Examples
-
-### Stock Information Display
-```
-Current Information for AAPL
---------------------------------------------------------------------------------
-Current Price: $234.93
-Market Cap: $3,551,155,000,000.00
-52 Week Range: $189.99 - $234.93
-P/E Ratio: 28.5
-Dividend Yield: 0.54%
-```
-
-### Gainers/Losers Analysis
-```
-Top 20 Gainers
---------------------------------------------------------------------------------
-Symbol Change%    Start Price    End Price       Volume
-TSLA   +88.34%   $176.75       $332.89         91,534,656
-ORCL   +46.76%   $124.49       $182.70         8,466,684
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **No Data Available**
-   - Check internet connection
-   - Verify stock ticker exists
-   - Ensure market hours for intraday data
-
-2. **API Rate Limits**
-   - Wait a few minutes between requests
-   - Use longer time intervals
-   - Reduce batch size for multiple stocks
-
-3. **Installation Issues**
-   - Update pip: `pip install --upgrade pip`
-   - Check Python version compatibility
-   - Verify all dependencies are installed
-
-## Development
-
-### Setting Up Development Environment
-
-1. **Clone and Install:**
-```bash
-git clone https://github.com/yourusername/Stock-Volatility-Analyzer.git
-cd Stock-Volatility-Analyzer
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-pip install -r requirements.txt
-```
-
-2. **Docker Support:**
-```bash
-docker build -t stock-analyzer .
-docker run -it stock-analyzer
-```
-
-### Project Structure
-```
-Stock-Volatility-Analyzer/
-├── src/
-│   ├── __init__.py
-│   ├── stock_analysis.py
-│   ├── stock_data.py
-│   ├── stock_info.py
-│   ├── menu.py
-│   └── visualization.py
-├── utils/
-│   ├── __init__.py
-│   ├── constants.py
-│   └── validators.py
-├── main.py
-├── requirements.txt
-└── README.md
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Coding Standards
-- Follow PEP 8 guidelines
-- Include docstrings for all functions
-- Add type hints
-- Write unit tests for new features
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
-For additional support or questions, please open an issue on the GitHub repository.
+- Intraday data options are only available during market hours
+- The tool automatically adjusts to the last trading day when analyzing non-trading days
+- Default analysis is limited to S&P 500 stocks for optimal performance, with an option to analyze all available stocks
+- For stability, the tool implements rate limiting and error handling when fetching data
+- GUI is coming soon!!

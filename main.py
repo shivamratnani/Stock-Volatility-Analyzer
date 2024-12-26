@@ -80,10 +80,11 @@ def main():
                     except ValueError:
                         print("Please enter a valid number")
                 
+                analyze_sp500 = menu.get_analysis_scope()
                 try:
                     print("\nFetching data... This might take a few minutes.")
                     start_time = time.time()
-                    gainers, losers, available_stocks = stock_analysis.get_gainers_losers(period, limit)
+                    gainers, losers, available_stocks = stock_analysis.get_gainers_losers(period, limit, analyze_sp500)
                     elapsed_time = time.time() - start_time
                     
                     if gainers.empty or losers.empty:
