@@ -1,0 +1,7 @@
+Analysis Date: 2024-12-25 18:57:03
+Period: 1mo
+
+A: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+AAPL: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+ABBV: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+Analysis: Error analyzing stocks: 'StockAnalysis' object has no attribute 'symbols'

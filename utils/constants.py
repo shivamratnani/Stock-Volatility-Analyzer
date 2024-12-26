@@ -1,5 +1,7 @@
+# import required modules
 from typing import Dict
 
+# menu options
 class MenuOptions:
     GAINERS_LOSERS = "1"
     CUSTOM_PERIOD = "2"
@@ -8,7 +10,7 @@ class MenuOptions:
     GRAPH = "5"
     EXIT = "0"
 
-# Separate dictionaries for intraday and regular periods
+# intraday time periods
 INTRADAY_PERIODS: Dict[str, str] = {
     "1m": "Last 1 minute of data",
     "5m": "Last 5 minutes of data with 1 minute increments",
@@ -18,6 +20,7 @@ INTRADAY_PERIODS: Dict[str, str] = {
     "12h": "Last 12 hours of data with 5 minute increments",
 }
 
+# regular time periods
 REGULAR_PERIODS: Dict[str, str] = {
     "1d": "Last 1 day of data with 1 hour increments",
     "5d": "Last 5 days of data with 1 day increments",
@@ -32,5 +35,5 @@ REGULAR_PERIODS: Dict[str, str] = {
     "max": "Maximum available data"
 }
 
-# Combined periods for display
+# combine all periods
 TIME_PERIODS: Dict[str, str] = {**INTRADAY_PERIODS, **REGULAR_PERIODS}

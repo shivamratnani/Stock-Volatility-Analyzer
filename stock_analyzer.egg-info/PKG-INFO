@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: stock_analyzer
+Version: 0.1
+Requires-Dist: yfinance>=0.2.31
+Requires-Dist: pandas>=2.0.0
+Requires-Dist: matplotlib>=3.7.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: requests>=2.31.0
+Requires-Dist: pandas_market_calendars>=4.1.4
+Requires-Dist: pytz>=2023.3

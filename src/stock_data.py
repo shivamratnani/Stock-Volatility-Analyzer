@@ -1,3 +1,4 @@
+# import required modules
 import yfinance as yf
 import pandas as pd
 from datetime import datetime
@@ -8,9 +9,11 @@ class StockData:
         self.data = None
         
     def fetch_data(self, ticker: str, period: str = None, start_date: str = None, end_date: str = None) -> pd.DataFrame:
-        """Fetch stock data based on period or date range"""
+        """fetch stock data"""
+        # validate inputs
         validate_ticker(ticker)
         
+        # get data based on input type
         if start_date and end_date:
             validate_dates(start_date, end_date)
             self.data = yf.download(ticker, start=start_date, end=end_date)
@@ -18,8 +21,3 @@ class StockData:
             self.data = yf.download(ticker, period=period)
             
         return self.data
-        
-    def get_gainers_losers(self, period: str, limit: int = 20) -> tuple[pd.DataFrame, pd.DataFrame]:
-        """Get top gainers and losers for the specified period"""
-        # Implementation for fetching gainers and losers
-        pass 

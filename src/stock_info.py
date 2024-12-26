@@ -1,3 +1,4 @@
+# import required modules
 import yfinance as yf
 import pandas as pd
 from typing import Dict, Any
@@ -5,10 +6,11 @@ from typing import Dict, Any
 class StockInfo:
     @staticmethod
     def get_basic_info(ticker: str) -> Dict[str, Any]:
-        """Get basic information about a stock"""
+        """get basic stock info"""
         stock = yf.Ticker(ticker)
         info = stock.info
         
+        # return key stock metrics
         return {
             'Name': info.get('longName', 'N/A'),
             'Sector': info.get('sector', 'N/A'),
@@ -23,6 +25,6 @@ class StockInfo:
 
     @staticmethod
     def get_historical_data(ticker: str, period: str) -> pd.DataFrame:
-        """Get historical price data for a stock"""
+        """get historical prices"""
         stock = yf.Ticker(ticker)
-        return stock.history(period=period) 
+        return stock.history(period=period)
